@@ -7,7 +7,7 @@ cd DDPO
 pip install -e .
 ```
 
-## Usage
+## RUN
 ```bash
 accelerate launch train.py
 ```
