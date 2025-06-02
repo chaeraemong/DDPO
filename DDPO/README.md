@@ -15,7 +15,7 @@ pip install -e .
 
 ## Usage
 ```bash
-accelerate launch scripts/train.py
+accelerate launch train.py
 ```
 This will immediately start finetuning Stable Diffusion v1.5 for compressibility on all available GPUs using the config from `config/base.py`. It should work as long as each GPU has at least 10GB of memory. If you don't want to log into wandb, you can run `wandb disabled` before the above command.
 
@@ -42,7 +42,7 @@ The image at the top of this README was generated using LoRA! However, I did use
 
 You can find the exact configs I used for the 4 experiments in `config/dgx.py`. For example, to run the aesthetic quality experiment:
 ```bash
-accelerate launch scripts/train.py --config config/dgx.py:aesthetic
+accelerate launch train.py --config config/dgx.py:aesthetic
 ```
 
 If you want to run the LLaVA prompt-image alignment experiments, you need to dedicate a few GPUs to running LLaVA inference using [this repo](https://github.com/kvablack/LLaVA-server/).
