@@ -39,7 +39,9 @@ accelerate launch train.py --config config/dgx.py:aesthetic
 accelerate launch train.py --config config/dgx.py:prompt_image_alignment
 CUDA_VISIBLE_DEVICE=0 accelerate launch train.py --config config/dgx.py:prompt_image_alignment
 ```
--> For prompt image alignment experiment. Communication with LLaVA is needed for Bert score reward.\
+-> For prompt image alignment experiment.\
+-> Communication with LLaVA is needed for Bert score reward.\
+=> The LLaVA server must be running before communication. DDPO should be started only after the LLaVA checkpoints have been loaded.\
 -> Reward function : llava_bertscore\
 -> Don`t forget to add a name for WandB log(config.run_name) at 'config/base.py'.\
 -> GPU VRAM required : ~25GB
