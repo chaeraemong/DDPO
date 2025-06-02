@@ -43,7 +43,7 @@ CUDA_VISIBLE_DEVICE=0 accelerate launch train.py --config config/dgx.py:prompt_i
 -> For prompt image alignment experiment. Communication with LLaVA is needed for Bert score reward.\
 -> Reward function : llava_bertscore\
 -> Don`t forget to add a name for WandB log(config.run_name) at 'config/base.py'.\
--> GPU VRAM required : 
+-> GPU VRAM required : ~15GB
 
 Please note that the default hyperparameters in `config/base.py` are not meant to achieve good performance, they are just to get the code up and running as fast as possible. I would not expect to get good results without using a much larger number of samples per epoch and gradient accumulation steps.
 
