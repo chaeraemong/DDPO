@@ -6,5 +6,5 @@ Serves LLaVA inference using an HTTP server. Supports batched inference and cach
 ```bash
 CUDA_VISIBLE_DEVICES=0 gunicorn -c LLAVA/gunicorn.conf.py "LLAVA.app:create_app()"
 ```
--> GPU VRAM required : ~ 20GB\
+-> GPU VRAM required : ~ 35GB\
 -> Must modify `gunicorn.conf.py` to change the number of GPUs.
