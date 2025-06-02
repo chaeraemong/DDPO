@@ -2,12 +2,13 @@ from PIL import Image
 from io import BytesIO
 import pickle
 import traceback
-from llava_server.llava import load_llava
-from llava_server.bertscore import load_bertscore
+from LLAVA.llava_server.llava2 import load_llava
+from LLAVA.llava_server.bertscore import load_bertscore
 import numpy as np
 import os
-
 from flask import Flask, request, Blueprint
+
+# app = create_app()
 
 root = Blueprint("root", __name__)
 
@@ -20,7 +21,7 @@ def create_app():
     app.register_blueprint(root)
     return app
 
-@root.route("/", methods=["POST"]) 
+@root.route("/", methods=["POST"])
 def inference():
     print(f"received POST request from {request.remote_addr}")
     data = request.get_data()
@@ -73,8 +74,8 @@ def inference():
     return response, returncode
 
 
-HOST = "127.0.0.1"
-PORT = 8085
+HOST = "0.0.0.0"
+PORT = 8000
 
 if __name__ == "__main__":
     create_app().run(HOST, PORT)
