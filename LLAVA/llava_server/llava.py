@@ -1,66 +1,70 @@
-from typing import Iterable, List
-from typing import Iterable, List
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import argparse
 import torch
+import os
+import json
+from tqdm import tqdm
+from typing import Iterable, List
+from typing import Iterable, List
 import numpy as np
+
+from llava.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
+from llava.conversation import conv_templates
+from llava.model.builder import load_pretrained_model
 from llava.utils import disable_torch_init
-from transformers import CLIPImageProcessor
+from llava.mm_utils import tokenizer_image_token, get_model_name_from_path
+
 from PIL import Image
-from llava.conversation import simple_conv_multimodal
-
-
-DEFAULT_IMAGE_TOKEN = "<image>"
-DEFAULT_IMAGE_PATCH_TOKEN = "<im_patch>"
-DEFAULT_IM_START_TOKEN = "<im_start>"
-DEFAULT_IM_END_TOKEN = "<im_end>"
+import math
 
 MAX_TOKENS = 64
+PROMPT = """You are LLaVA, a large language and vision assistant.You are able to understand the visual content that the user provides, and assist the user with a variety of tasks using natural language.Follow the instructions carefully and explain your answers in detail.###Human: Hi!###Assistant: Hi there!  How can I help you today?###Human:"""
 
-PROMPT = simple_conv_multimodal.get_prompt() + "Human: "
+
+def pad_sequences(sequences, pad_token_id, padding_side="left"):
+    """
+    Pad a list of token id sequences of unequal lengths.
+    Supports left or right padding.
+    """
+    max_length = max(len(seq) for seq in sequences)
+    padded = []
+    for seq in sequences:
+        if padding_side == "left":
+            padded_seq = [pad_token_id] * (max_length - len(seq)) + seq
+        else:
+            padded_seq = seq + [pad_token_id] * (max_length - len(seq))
+        padded.append(padded_seq)
+    return padded
+
+
+def tokenizer_image_token_batch(prompts, tokenizer, image_token_index=IMAGE_TOKEN_INDEX):
+    """
+    Process a list of prompts using tokenizer_image_token and return a tensor after applying left-side padding.
+    """
+    # For each prompt, use tokenizer_image_token to get the token id list (without returning a tensor)
+    batch_encodings = [
+        tokenizer_image_token(prompt, tokenizer, image_token_index, return_tensors=None)
+        for prompt in prompts
+    ]
+    
+    # Use pad_sequences to perform left-side padding on the token id lists to construct a tensor of uniform length.
+    padded_encodings = pad_sequences(batch_encodings, pad_token_id=tokenizer.pad_token, padding_side=tokenizer.padding_side)
+    
+    return torch.tensor(padded_encodings, dtype=torch.long)
+
 
 def load_llava(params_path):
-    # load model
+    # Model
     disable_torch_init()
-    tokenizer = AutoTokenizer.from_pretrained(params_path)
-    model = AutoModelForCausalLM.from_pretrained(
-        params_path, torch_dtype=torch.float16
-    ).cuda()
-    image_processor = CLIPImageProcessor.from_pretrained(
-        model.config.mm_vision_tower, torch_dtype=torch.float16
-    )
-
-    mm_use_im_start_end = getattr(model.config, "mm_use_im_start_end", False)
-    tokenizer.add_tokens([DEFAULT_IMAGE_PATCH_TOKEN], special_tokens=True)
-    if mm_use_im_start_end:
-        tokenizer.add_tokens(
-            [DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN], special_tokens=True
-        )
-
-    vision_tower = model.model.vision_tower[0]
-    vision_tower.to(device="cuda", dtype=torch.float16)
-    vision_config = vision_tower.config
-    vision_config.im_patch_token = tokenizer.convert_tokens_to_ids(
-        [DEFAULT_IMAGE_PATCH_TOKEN]
-    )[0]
-    vision_config.use_im_start_end = mm_use_im_start_end
-    if mm_use_im_start_end:
-        (
-            vision_config.im_start_token,
-            vision_config.im_end_token,
-        ) = tokenizer.convert_tokens_to_ids(
-            [DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN]
-        )
-    image_token_len = (vision_config.image_size // vision_config.patch_size) ** 2
-
-    if mm_use_im_start_end:
-        image_tokens = (
-            DEFAULT_IM_START_TOKEN
-            + DEFAULT_IMAGE_PATCH_TOKEN * image_token_len
-            + DEFAULT_IM_END_TOKEN
-        )
+    model_name = get_model_name_from_path(params_path)
+    model_base = None
+    tokenizer, model, image_processor, context_len = load_pretrained_model(params_path, model_base, model_name)
+    model.half()  # align with the format in ddpo-pytorch, using fp16
+    
+    if getattr(model.config, 'mm_use_im_start_end', False):
+        image_tokens = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN
     else:
-        image_tokens = DEFAULT_IMAGE_PATCH_TOKEN * image_token_len
-
+        image_tokens = DEFAULT_IMAGE_TOKEN
+    
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"
 
@@ -74,14 +78,19 @@ def load_llava(params_path):
         queries = np.array(queries)  # (batch_size, num_queries_per_image)
 
         # preprocess images
-        images = image_processor(images, return_tensors="pt")["pixel_values"]
-        images = images.to("cuda", dtype=torch.float16)
+        image_tensor = image_processor(images, return_tensors="pt")["pixel_values"]
+        images = image_tensor.half().cuda()
 
         # first, get the activations for the image tokens
         initial_prompts = [PROMPT + image_tokens + " " for _ in range(len(images))]
-        initial_input_ids = tokenizer(
-            initial_prompts, return_tensors="pt"
-        ).input_ids.cuda()
+        
+        # conv = conv_templates["vicuna_v1"].copy()
+        # conv.append_message(conv.roles[0], initial_prompts[0])
+        # conv.append_message(conv.roles[1], None)
+        # for i in range(len(initial_prompts)):
+        #     initial_prompts[i] = conv.get_prompt()
+        
+        initial_input_ids = tokenizer_image_token_batch(initial_prompts, tokenizer, IMAGE_TOKEN_INDEX).cuda()
         initial_out = model(initial_input_ids, images=images, use_cache=True)
         initial_key_values = initial_out.past_key_values
 
@@ -102,13 +111,11 @@ def load_llava(params_path):
 
         # prepare inputs for the queries
         prompts = [q + "###" for q in flat_queries]
-        input_ids = tokenizer(
-            prompts, return_tensors="pt", padding=True
-        ).input_ids.cuda()
+        input_ids = tokenizer_image_token_batch(prompts, tokenizer, IMAGE_TOKEN_INDEX).cuda()
 
         # stop upon seeing any of these tokens
         stop_tokens = torch.as_tensor(
-            tokenizer.convert_tokens_to_ids(["▁###", "##", "#"]),
+            tokenizer.convert_tokens_to_ids(["▁###", "###", "##", "#"]),
             dtype=torch.long,
             device="cuda",
         )
@@ -141,6 +148,7 @@ def load_llava(params_path):
 
             if "Assistant:" in output:
                 output = output.split("Assistant:")[1]
+            output = output.split('.')[0] + '.'  # remove some extra interfering sentences from the LLaVA model output
             outputs_clean.append(output.strip())
 
         # reshape outputs back to (batch_size, num_queries_per_image)
