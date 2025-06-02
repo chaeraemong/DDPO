@@ -16,21 +16,21 @@ This will immediately start finetuning Stable Diffusion v1.5 for compressibility
 ```bash
 accelerate launch train.py --config config/dgx.py:compressibility
 ```
--> For compressibility experiment.\\
+-> For compressibility experiment.
 -> Reward function : jpeg_compressibility
-\\
+
 
 ```bash
 accelerate launch train.py --config config/dgx.py:incompressibility
 ```
--> For jpeg incompressibility experiment.\\
+-> For jpeg incompressibility experiment.
 -> Reward function : jpeg_incompressibility
-\\
+
 
 ```bash
 accelerate launch train.py --config config/dgx.py:aesthetic
 ```
--> For aesthetic experiment.
+-> For aesthetic experiment.\
 -> Reward function : aesthetic_score
 
 ```bash
