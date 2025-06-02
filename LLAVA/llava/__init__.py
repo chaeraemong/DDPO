@@ -1,1 +1,1 @@
-from .model import LlavaLlamaForCausalLM
+from LLAVA.llava.model import LlavaLlamaForCausalLM
