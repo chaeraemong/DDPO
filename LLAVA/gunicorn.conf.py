@@ -2,7 +2,7 @@ import os
 NUM_DEVICES = 1
 USED_DEVICES = set()
 
-os.environ["LLAVA_PARAMS_PATH"] = "liuhaotian/llava-v1.6-vicuna-7b"    #llava-hf/llava-1.5-7b-hf"    #liuhaotian/llava-v1.6-mistral-7b"    #../llava-weights"
+# os.environ["LLAVA_PARAMS_PATH"] = "liuhaotian/llava-v1.6-vicuna-7b" #llava-hf/llava-1.5-7b-hf"  #liuhaotian/llava-v1.6-mistral-7b"  #../llava-weights"
 
 def pre_fork(server, worker):
     # runs on server
