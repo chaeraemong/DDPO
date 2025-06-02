@@ -4,6 +4,6 @@ Serves LLaVA inference using an HTTP server. Supports batched inference and cach
 
 ## Usage
 ```bash
-gunicorn "app:create_app()"
+CUDA_VISIBLE_DEVICES=0 gunicorn -c /home/username/LLAVA/gunicorn.conf.py "LLAVA.app:create_app()"
 ```
 You must modify `gunicorn.conf.py` to change the number of GPUs.
