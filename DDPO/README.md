@@ -1,15 +1,9 @@
-# ddpo-pytorch
-
-This is an implementation of [Denoising Diffusion Policy Optimization (DDPO)](https://rl-diffusion.github.io/) in PyTorch with support for [low-rank adaptation (LoRA)](https://huggingface.co/docs/diffusers/training/lora). Unlike our original research code (which you can find [here](https://github.com/jannerm/ddpo)), this implementation runs on GPUs, and if LoRA is enabled, requires less than 10GB of GPU memory to finetune Stable Diffusion!
-
-![DDPO](teaser.jpg)
-
 ## Installation
 Requires Python 3.10 or newer.
 
 ```bash
 git clone git@github.com:kvablack/ddpo-pytorch.git
-cd ddpo-pytorch
+cd DDPO
 pip install -e .
 ```
 
@@ -18,6 +12,31 @@ pip install -e .
 accelerate launch train.py
 ```
 This will immediately start finetuning Stable Diffusion v1.5 for compressibility on all available GPUs using the config from `config/base.py`. It should work as long as each GPU has at least 10GB of memory. If you don't want to log into wandb, you can run `wandb disabled` before the above command.
+
+```bash
+accelerate launch train.py --config config/dgx.py:compressibility
+```
+-> For compressibility experiment.
+-> Reward function : jpeg_compressibility
+
+```bash
+accelerate launch train.py --config config/dgx.py:incompressibility
+```
+-> For jpeg incompressibility experiment.
+-> Reward function : jpeg_incompressibility
+
+```bash
+accelerate launch train.py --config config/dgx.py:aesthetic
+```
+-> For aesthetic experiment.
+-> Reward function : aesthetic_score
+
+```bash
+accelerate launch train.py --config config/dgx.py:prompt_image_alignment
+```
+-> For prompt image alignment experiment. Communication with LLaVA is needed for Bert score reward.
+-> Reward function : llava_bertscore
+-> Don`t forget to add a name for WandB log(config.run_name) at 'config/base.py'.
 
 Please note that the default hyperparameters in `config/base.py` are not meant to achieve good performance, they are just to get the code up and running as fast as possible. I would not expect to get good results without using a much larger number of samples per epoch and gradient accumulation steps.
 
