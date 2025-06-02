@@ -2,7 +2,6 @@
 Requires Python 3.10 or newer.
 
 ```bash
-git clone git@github.com:chaeraemong/DDPO.git
 cd DDPO
 pip install -e .
 ```
