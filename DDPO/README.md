@@ -44,7 +44,7 @@ CUDA_VISIBLE_DEVICE=0 accelerate launch train.py --config config/dgx.py:prompt_i
 => The LLaVA server must be running before communication. DDPO should be started only after the LLaVA checkpoints have been loaded.\
 -> Reward function : llava_bertscore\
 -> Don`t forget to add a name for WandB log(config.run_name) at 'config/base.py'.\
--> GPU VRAM required : ~25GB
+-> GPU VRAM required : ~25GB 17GB
 
 Please note that the default hyperparameters in `config/base.py` are not meant to achieve good performance, they are just to get the code up and running as fast as possible. I would not expect to get good results without using a much larger number of samples per epoch and gradient accumulation steps.
 
