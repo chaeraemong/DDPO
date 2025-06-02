@@ -7,6 +7,7 @@ from LLAVA.llava_server.bertscore import load_bertscore
 import numpy as np
 import os
 from flask import Flask, request, Blueprint
+os.environ["NUMEXPR_MAX_THREADS"] = "64"
 
 # app = create_app()
 
@@ -14,7 +15,7 @@ root = Blueprint("root", __name__)
 
 def create_app():
     global INFERENCE_FN, BERTSCORE_FN
-    INFERENCE_FN = load_llava(os.environ["LLAVA_PARAMS_PATH"])
+    INFERENCE_FN = load_llava("liuhaotian/llava-v1.6-vicuna-7b")
     BERTSCORE_FN = load_bertscore()
 
     app = Flask(__name__)
