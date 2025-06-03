@@ -20,4 +20,10 @@ sudo firewall-cmd --reload
 CUDA_VISIBLE_DEVICES=0 gunicorn -c LLAVA/gunicorn.conf.py "LLAVA.app:create_app()"
 ```
 -> GPU VRAM required : ~ 35GB\
--> Must modify `gunicorn.conf.py` to change the number of GPUs.(Currently set to use 1 GPU.)
+-> Must modify `gunicorn.conf.py` to change the number of GPUs.(Currently set to use 1 GPU.)\
+
+If the LLava server terminal displays logs like the image below, it means the LLava code is running correctly on the server.
+![LLAVA](llava_server_log1.png)
+
+When a request arrives from the DDPO execution server, you will see logs like the following.
+![LLAVA](llava_server_log2.png)
