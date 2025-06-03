@@ -20,4 +20,4 @@ sudo firewall-cmd --reload
 CUDA_VISIBLE_DEVICES=0 gunicorn -c LLAVA/gunicorn.conf.py "LLAVA.app:create_app()"
 ```
 -> GPU VRAM required : ~ 35GB\
--> Must modify `gunicorn.conf.py` to change the number of GPUs.
+-> Must modify `gunicorn.conf.py` to change the number of GPUs.(Currently set to use 1 GPU.)
