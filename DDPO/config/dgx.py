@@ -66,11 +66,11 @@ def prompt_image_alignment():
     config.num_epochs = 200
     # for this experiment, I reserved 2 GPUs for LLaVA inference so only 6 could be used for DDPO. the total number of
     # samples per epoch is 8 * 6 * 6 = 288.
-    config.sample.batch_size = 8
+    config.sample.batch_size = 1
     config.sample.num_batches_per_epoch = 6
 
     # again, this one is harder to optimize, so I used (8 * 6) / (4 * 6) = 2 gradient updates per epoch.
-    config.train.batch_size = 4
+    config.train.batch_size = 1
     config.train.gradient_accumulation_steps = 6
 
     # prompting
