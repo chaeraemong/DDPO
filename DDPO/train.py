@@ -15,6 +15,7 @@ from diffusers.models.attention_processor import LoRAAttnProcessor
 import numpy as np
 import ddpo_pytorch.prompts
 import ddpo_pytorch.rewards
+# from .ddpo_pytorch import prompts, rewards
 from ddpo_pytorch.stat_tracking import PerPromptStatTracker
 from ddpo_pytorch.diffusers_patch.pipeline_with_logprob import pipeline_with_logprob
 from ddpo_pytorch.diffusers_patch.ddim_with_logprob import ddim_step_with_logprob
@@ -24,6 +25,7 @@ from functools import partial
 import tqdm
 import tempfile
 from PIL import Image
+os.environ["NUMEXPR_MAX_THREADS"] = "64"
 
 tqdm = partial(tqdm.tqdm, dynamic_ncols=True)
 
