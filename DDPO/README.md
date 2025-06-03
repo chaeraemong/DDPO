@@ -12,39 +12,37 @@ accelerate launch train.py
 ```
 This will immediately start finetuning Stable Diffusion v1.5 for compressibility on all available GPUs using the config from `config/base.py`. If you don't want to log into wandb, you can run `wandb disabled` before the above command.
 
+### Compressibility
 ```bash
 accelerate launch train.py --config config/dgx.py:compressibility
 ```
--> For compressibility experiment.\
 -> Reward function : jpeg_compressibility\
 -> GPU VRAM required : ~10GB
 
-
+### Incompressibility
 ```bash
 accelerate launch train.py --config config/dgx.py:incompressibility
 ```
--> For jpeg incompressibility experiment.\
 -> Reward function : jpeg_incompressibility\
 -> GPU VRAM required : 
 
-
+### Aesthetic
 ```bash
 accelerate launch train.py --config config/dgx.py:aesthetic
 ```
--> For aesthetic experiment.\
 -> Reward function : aesthetic_score\
 -> GPU VRAM required : 
 
+### Prompt Image Alignment
 ```bash
 accelerate launch train.py --config config/dgx.py:prompt_image_alignment
 CUDA_VISIBLE_DEVICE=0 accelerate launch train.py --config config/dgx.py:prompt_image_alignment
 ```
--> For prompt image alignment experiment.\
 -> Communication with LLaVA is needed for Bert score reward.\
 => The LLaVA server must be running before communication. DDPO should be started only after the LLaVA checkpoints have been loaded.\
 -> Reward function : llava_bertscore\
 -> Don`t forget to add a name for WandB log(config.run_name) at 'config/base.py'.\
--> GPU VRAM required : ~25GB 17GB
+-> GPU VRAM required : Min: ~17GB, Max: ~25GB
 
 Please note that the default hyperparameters in `config/base.py` are not meant to achieve good performance, they are just to get the code up and running as fast as possible. I would not expect to get good results without using a much larger number of samples per epoch and gradient accumulation steps.
 
