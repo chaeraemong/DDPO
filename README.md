@@ -9,6 +9,11 @@ Requires Python 3.10 or newer.
 
 ```bash
 git clone git@github.com:chaeraemong/DDPO.git
+
+conda create -n ddpo
+conda activate ddpo
+
 cd DDPO    # for DDPO server setup
 cd LLAVA   # for LLaVA server setup
 ```
+
