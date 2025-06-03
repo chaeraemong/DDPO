@@ -17,3 +17,5 @@ cd DDPO    # for DDPO server setup
 cd LLAVA   # for LLaVA server setup
 ```
 
+## Notice
+Both train.py (DDPO) and app.py (LLAVA) must be run from inside the DDPO directory.
